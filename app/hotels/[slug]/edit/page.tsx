@@ -53,7 +53,7 @@ export default function EditHotel() {
         );
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
-          const hotelData = snapshot.docs[0].data();
+          const hotelData: any = snapshot.docs[0].data();
           if (hotelData.ownerId !== user.uid) {
             toast.error('Você não tem permissão para editar este hotel.');
             router.push('/');

@@ -107,7 +107,7 @@ export default function HotelDetails() {
         );
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
-          const hotelData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+          const hotelData: any = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
           
           // Check if hotel has an active VIP plan
           const isGold = hotelData.vipType === 'gold';
