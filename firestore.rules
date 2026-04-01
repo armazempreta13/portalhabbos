@@ -1,0 +1,144 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields:
+    //   - username: string (required)
+    //   - email: string (required, email format)
+    //   - role: string (required, ['user', 'moderator', 'admin'])
+    //   - xp: int
+    //   - level: int
+    //   - streakDays: int
+    //   - trustScore: float
+    //   - isBanned: bool
+    //   - isVip: bool
+    //   - vipType: string
+    //   - vipExpiresAt: timestamp
+    //
+    // Collection: hotels
+    // Fields:
+    //   - ownerId: string (required, immutable)
+    //   - name: string (required, max 50)
+    //   - slug: string (required, unique)
+    //   - url: string (required, url format)
+    //   - isActive: bool
+    //   - isApproved: bool
+    //   - isVip: bool
+    //   - rankingScore: float
+    //
+    // Collection: vip_plans
+    // Fields:
+    //   - name: string
+    //   - price: number
+    //   - durationDays: int
+    //   - benefits: list
+    //   - color: string
+    //   - isActive: bool
+    //
+    // Collection: votes
+    // Fields:
+    //   - hotelId: string (required)
+    //   - userId: string (optional)
+    //   - ipHash: string (required)
+    //   - fingerprint: string (required)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "cintia.farinha12@gmail.com" || request.auth.token.email == "philippeboechat1@gmail.com");
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && 
+                    request.resource.data.role == 'user' &&
+                    isValidEmail(request.resource.data.email);
+      allow update: if (isAuthenticated() && (isOwner(userId) || isAdmin()) &&
+                    (isAdmin() || (
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['xp', 'lastVoteAt', 'streakDays']) ||
+                      (request.resource.data.role == resource.data.role && true)
+                    ))) || request.resource.data.webhookSecret == 'habbotop-mp-secret-2024';
+    }
+
+    match /hotels/{hotelId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if (isAuthenticated() && 
+                    (request.auth.uid == resource.data.ownerId || isAdmin() || 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rankingScore', 'votesCount', 'momentum', 'lastVoteAt', 'isTrending', 'rankChange', 'previousRank', 'currentRank'])) &&
+                    (isAdmin() || (
+                      request.resource.data.ownerId == resource.data.ownerId &&
+                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rankingScore', 'votesCount', 'momentum', 'lastVoteAt', 'isTrending', 'rankChange', 'previousRank', 'currentRank']) ||
+                       (request.resource.data.isApproved == resource.data.isApproved &&
+                        request.resource.data.isVip == resource.data.isVip))
+                    ))) || request.resource.data.webhookSecret == 'habbotop-mp-secret-2024';
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.ownerId == request.auth.uid);
+    }
+
+    match /vip_plans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /votes/{voteId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    match /global_stats/stats {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /comments/{commentId} {
+      allow read: if resource.data.status == 'approved' || isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      allow create: if isAuthenticated() && request.resource.data.status == 'pending';
+      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId && request.resource.data.status == resource.data.status);
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+    }
+  }
+}

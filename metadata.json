@@ -1,0 +1,9 @@
+{
+  "name": "HabboTop - Premium Server List",
+  "description": "O portal definitivo para ranking e descoberta de servidores Habbo. Sistema full-stack com anti-fraude, gamificação e planos VIP.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

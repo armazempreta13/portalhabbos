@@ -1,0 +1,155 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "Represents a user in the system.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "description": "Unique username." },
+        "email": { "type": "string", "format": "email", "description": "User email." },
+        "avatar": { "type": "string", "description": "URL to user avatar." },
+        "role": { "type": "string", "enum": ["user", "moderator", "admin"], "description": "User role." },
+        "xp": { "type": "integer", "description": "Experience points." },
+        "level": { "type": "integer", "description": "User level." },
+        "streakDays": { "type": "integer", "description": "Consecutive days voting." },
+        "lastVoteAt": { "type": "string", "format": "date-time", "description": "Last time the user voted." },
+        "trustScore": { "type": "number", "description": "Anti-fraud trust score (0-1)." },
+        "isBanned": { "type": "boolean", "description": "Whether the user is banned." },
+        "isVip": { "type": "boolean", "description": "Whether the user is a VIP member." },
+        "vipType": { "type": "string", "enum": ["none", "bronze", "silver", "gold"], "description": "Type of VIP plan." },
+        "vipExpiresAt": { "type": "string", "format": "date-time", "description": "Expiration date of VIP status." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["username", "email", "role"]
+    },
+    "hotels": {
+      "title": "Hotel",
+      "description": "Represents a Habbo private server.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "description": "UID of the owner." },
+        "name": { "type": "string", "description": "Hotel name." },
+        "slug": { "type": "string", "description": "Unique URL slug." },
+        "url": { "type": "string", "format": "uri", "description": "Hotel website URL." },
+        "logo": { "type": "string", "description": "URL to hotel logo." },
+        "banner": { "type": "string", "description": "URL to hotel banner." },
+        "description": { "type": "string", "description": "Hotel description." },
+        "category": { "type": "string", "enum": ["general", "roleplay", "events", "classic", "custom"] },
+        "country": { "type": "string", "description": "ISO country code." },
+        "language": { "type": "string", "description": "Primary language." },
+        "onlineUsers": { "type": "integer", "description": "Current online users count." },
+        "isActive": { "type": "boolean", "description": "Whether the hotel is active." },
+        "isApproved": { "type": "boolean", "description": "Whether the hotel is approved by admins." },
+        "isVip": { "type": "boolean", "description": "Whether the hotel has VIP status (highlighted)." },
+        "vipType": { "type": "string", "enum": ["none", "bronze", "silver", "gold"], "description": "Type of VIP highlight." },
+        "staffVacancies": { "type": "array", "items": { "type": "string" }, "description": "List of available staff positions." },
+        "gallery": { "type": "array", "items": { "type": "string" }, "description": "List of image URLs for the hotel gallery." },
+        "fraudScore": { "type": "number", "description": "Fraud score (0-1)." },
+        "rankingScore": { "type": "number", "description": "Calculated ranking score." },
+        "votesCount": { "type": "integer", "description": "Total votes count." },
+        "previousRank": { "type": "integer", "description": "Rank in the previous period." },
+        "currentRank": { "type": "integer", "description": "Current rank." },
+        "rankChange": { "type": "integer", "description": "Change in rank (current - previous)." },
+        "momentum": { "type": "number", "description": "Growth momentum score." },
+        "isTrending": { "type": "boolean", "description": "Whether the hotel is currently trending." },
+        "lastRankUpdate": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "name", "slug", "url"]
+    },
+    "vip_plans": {
+      "title": "VIP Plan",
+      "description": "Represents a VIP subscription plan.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Plan name (e.g., Bronze, Silver, Gold)." },
+        "price": { "type": "number", "description": "Price in BRL." },
+        "durationDays": { "type": "integer", "description": "Duration in days." },
+        "benefits": { "type": "array", "items": { "type": "string" }, "description": "List of benefits." },
+        "color": { "type": "string", "description": "Hex color for the plan." },
+        "isActive": { "type": "boolean", "description": "Whether the plan is available for purchase." }
+      },
+      "required": ["name", "price", "durationDays"]
+    },
+    "votes": {
+      "title": "Vote",
+      "description": "Represents a vote for a hotel.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the voter (optional)." },
+        "hotelId": { "type": "string", "description": "ID of the hotel." },
+        "ipHash": { "type": "string", "description": "Hashed IP address." },
+        "fingerprint": { "type": "string", "description": "Browser fingerprint." },
+        "voteValue": { "type": "integer", "description": "Value of the vote (usually 1)." },
+        "isSuspicious": { "type": "boolean", "description": "Flagged as suspicious." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["hotelId", "ipHash", "fingerprint", "createdAt"]
+    },
+    "reports": {
+      "title": "Report",
+      "description": "Represents a report against a hotel or user.",
+      "type": "object",
+      "properties": {
+        "reporterId": { "type": "string", "description": "UID of the reporter." },
+        "targetId": { "type": "string", "description": "ID of the target (hotel or user)." },
+        "targetType": { "type": "string", "enum": ["hotel", "user"] },
+        "reason": { "type": "string", "description": "Reason for the report." },
+        "details": { "type": "string", "description": "Additional details." },
+        "status": { "type": "string", "enum": ["pending", "resolved", "dismissed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reporterId", "targetId", "targetType", "reason", "status", "createdAt"]
+    },
+    "events": {
+      "title": "Ranking Event",
+      "description": "Represents a dynamic event in the ranking feed.",
+      "type": "object",
+      "properties": {
+        "hotelId": { "type": "string" },
+        "hotelName": { "type": "string" },
+        "hotelSlug": { "type": "string" },
+        "type": { "type": "string", "enum": ["vote", "rank_up", "rank_down", "trending", "top1", "dispute"] },
+        "importance": { "type": "string", "enum": ["low", "medium", "high"] },
+        "value": { "type": "number" },
+        "metadata": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "importance", "createdAt"]
+    },
+    "comments": {
+      "title": "Comment",
+      "description": "Represents a user comment on a hotel page.",
+      "type": "object",
+      "properties": {
+        "hotelId": { "type": "string" },
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "avatar": { "type": "string" },
+        "text": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["hotelId", "userId", "username", "text", "status", "createdAt"]
+    },
+    "global_stats": {
+      "title": "Global Statistics",
+      "description": "Global counters for the site.",
+      "type": "object",
+      "properties": {
+        "totalVotes": { "type": "integer", "description": "Total votes cast." },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["totalVotes"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": { "schema": "users", "description": "User profiles." },
+    "hotels/{hotelId}": { "schema": "hotels", "description": "Hotel listings." },
+    "votes/{voteId}": { "schema": "votes", "description": "Vote records." },
+    "reports/{reportId}": { "schema": "reports", "description": "User reports." },
+    "events/{eventId}": { "schema": "events", "description": "Live ranking events." },
+    "comments/{commentId}": { "schema": "comments", "description": "Hotel comments." },
+    "global_stats/stats": { "schema": "global_stats", "description": "Global site statistics." }
+  }
+}
