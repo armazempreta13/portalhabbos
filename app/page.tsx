@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, Trophy, TrendingUp, Clock, Filter, PlusCircle, Users, Mail, Star, LayoutGrid, Home as HomeIcon, Crown, Activity, Zap, ChevronUp, ChevronDown, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { collection, query, orderBy, limit, onSnapshot, where, addDoc, serverTimestamp, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where, addDoc, serverTimestamp, getDocs, doc, updateDoc, QueryConstraint } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -249,7 +249,7 @@ export default function Home() {
   useEffect(() => {
     let q;
     
-    const constraints = [where('isActive', '==', true)];
+    const constraints: QueryConstraint[] = [where('isActive', '==', true)];
     
     if (categoryFilter !== 'all') {
       constraints.push(where('category', '==', categoryFilter));
