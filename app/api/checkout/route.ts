@@ -14,12 +14,12 @@ export async function POST(req: Request) {
     const preference = new Preference(client);
     const numericPrice = parseFloat(price.replace(',', '.'));
 
-    const isProduction = process.env.NODE_ENV === 'production' && 
-      process.env.NEXT_PUBLIC_APP_URL && 
-      !process.env.NEXT_PUBLIC_APP_URL.includes('localhost');
+    // Detect production by token prefix: APP_USR- = real, TEST- = sandbox
+    const token = process.env.MP_ACCESS_TOKEN || '';
+    const isProductionToken = token.startsWith('APP_USR-');
 
-    const baseUrl = isProduction 
-      ? process.env.NEXT_PUBLIC_APP_URL!
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
+      ? process.env.NEXT_PUBLIC_APP_URL
       : 'http://localhost:3000';
 
     const body: any = {
@@ -39,16 +39,16 @@ export async function POST(req: Request) {
       },
     };
 
-    // auto_return only works with HTTPS / non-localhost URLs
-    if (isProduction) {
+    // auto_return only works with non-localhost back_urls
+    if (!baseUrl.includes('localhost')) {
       body.auto_return = 'approved';
     }
 
     const response = await preference.create({ body });
 
-    // Em ambiente de teste, usar sandbox_init_point (funciona com localhost)
-    const checkoutUrl = isProduction 
-      ? response.init_point 
+    // Use real init_point for production token, sandbox for test token
+    const checkoutUrl = isProductionToken
+      ? response.init_point
       : response.sandbox_init_point;
 
     return NextResponse.json({ init_point: checkoutUrl });

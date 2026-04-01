@@ -17,7 +17,7 @@ const plans = [
   {
     id: 'bronze',
     name: 'Bronze',
-    price: '19,90',
+    price: '1,00',
     icon: <Star className="w-6 h-6 text-amber-600" />,
     features: [
       'Badge VIP Bronze no card',
@@ -31,7 +31,7 @@ const plans = [
   {
     id: 'silver',
     name: 'Prata',
-    price: '39,90',
+    price: '1,00',
     icon: <Zap className="w-6 h-6 text-gray-400" />,
     features: [
       'Badge VIP Prata no card',
@@ -47,7 +47,7 @@ const plans = [
   {
     id: 'gold',
     name: 'Ouro',
-    price: '79,90',
+    price: '1,00',
     icon: <Crown className="w-6 h-6 text-amber-500" />,
     features: [
       'Badge VIP Ouro no card',
