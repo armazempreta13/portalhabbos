@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 
+export const runtime = 'edge';
+
 // To run this securely, Vercel requires comparing a secret
 // defined in the environment variables.
 const CRON_SECRET = process.env.CRON_SECRET || 'dev_secret_key';

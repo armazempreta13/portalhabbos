@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
 
-const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || '' });
+export const runtime = 'edge';
 
 export async function POST(req: Request) {
   try {
@@ -11,10 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
-    const preference = new Preference(client);
     const numericPrice = parseFloat(price.replace(',', '.'));
-
-    // Detect production by token prefix: APP_USR- = real, TEST- = sandbox
     const token = process.env.MP_ACCESS_TOKEN || '';
     const isProductionToken = token.startsWith('APP_USR-');
 
@@ -23,14 +19,7 @@ export async function POST(req: Request) {
       : 'http://localhost:3000';
 
     const body: any = {
-      items: [
-        {
-          id: planId,
-          title: `Plano VIP ${planName} - HabboTop`,
-          quantity: 1,
-          unit_price: numericPrice,
-        }
-      ],
+      items: [{ id: planId, title: `Plano VIP ${planName} - HabboTop`, quantity: 1, unit_price: numericPrice }],
       external_reference: `${userId}|${planId}`,
       back_urls: {
         success: `${baseUrl}/vip?status=success`,
@@ -39,18 +28,27 @@ export async function POST(req: Request) {
       },
     };
 
-    // auto_return only works with non-localhost back_urls
     if (!baseUrl.includes('localhost')) {
       body.auto_return = 'approved';
     }
 
-    const response = await preference.create({ body });
+    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
-    // Use real init_point for production token, sandbox for test token
-    const checkoutUrl = isProductionToken
-      ? response.init_point
-      : response.sandbox_init_point;
+    const data = await response.json();
 
+    if (!response.ok) {
+      console.error('MP API error:', data);
+      return NextResponse.json({ error: data.message || 'MP API error' }, { status: 500 });
+    }
+
+    const checkoutUrl = isProductionToken ? data.init_point : data.sandbox_init_point;
     return NextResponse.json({ init_point: checkoutUrl });
   } catch (error: any) {
     console.error('Checkout error:', error?.message || error);
