@@ -25,7 +25,7 @@ const hotelSchema = z.object({
   category: z.string().min(1, 'Categoria é obrigatória'),
   staffVacancies: z.string().optional(),
   gallery: z.string().optional(),
-  wantHighlight: z.boolean().default(true),
+  wantHighlight: z.boolean().optional(),
 });
 
 type HotelFormValues = z.infer<typeof hotelSchema>;
