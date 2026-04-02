@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npx @cloudflare/next-on-pages",
     "pages:build": "npx @cloudflare/next-on-pages",
-    "deploy": "wrangler pages deploy .vercel/output/static",
+    "deploy": "npx wrangler pages deploy .vercel/output/static --project-name=portalhabbos",
     "start": "next start",
     "lint": "eslint .",
     "clean": "next clean"
